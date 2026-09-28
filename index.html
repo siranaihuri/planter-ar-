@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>植木鉢を AR で見る</title>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@4.3.1/dist/model-viewer.min.js"></script>
+<style>
+/* デザイン(AI_projects/Anatolia/DESIGN.md の知見): 強調色は「AR で見る」だけ。読む文字は 4.5:1 以上。押す所は 44px 以上(スマホ)。
+   鉢は黒いので、見る台の地だけはテーマに関係なく明るい灰色にする(暗い地だと形が見えない)。
+   使わない: グラデーション・装飾の影(床の影は置いた時の手がかりなので使う)・絵文字・飾りの動き */
+:root{ --bg:#FFFFFF; --panel:#F3F2EF; --text:rgba(0,0,0,.88); --text-2:rgba(0,0,0,.62); --line:rgba(0,0,0,.14);
+  --seg:#E6E5E1; --seg-on:#FFFFFF; --accent:#4B49C8; --on-accent:#FFFFFF; --stage:#E9E8E4; color-scheme:light dark }
+@media (prefers-color-scheme:dark){ :root{ --bg:#1D1C21; --panel:#26252C; --text:rgba(255,255,255,.92); --text-2:rgba(235,235,245,.70);
+  --line:rgba(235,235,245,.16); --seg:#17161A; --seg-on:#3A3940; --accent:#A5A3FF; --on-accent:#12111A } }
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 -apple-system,"Hiragino Sans","Yu Gothic UI",sans-serif}
+main{max-width:720px;margin:0 auto;padding:12px 16px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px}
+h1{margin:0;font-size:17px;font-weight:600}
+model-viewer{width:100%;height:min(62vh,560px);background:var(--stage);border-radius:10px;--poster-color:var(--stage)}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:3px;padding:3px;border-radius:10px;background:var(--seg)}
+.seg button{min-height:44px;border:0;border-radius:8px;background:transparent;color:var(--text-2);font:inherit;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--seg-on);color:var(--text);font-weight:600}
+.dims{font-size:14px;color:var(--text-2);font-variant-numeric:tabular-nums;text-align:center}
+.ar{min-height:52px;width:100%;border:0;border-radius:10px;background:var(--accent);color:var(--on-accent);font:inherit;font-size:16px;font-weight:600;cursor:pointer}
+.note{font-size:13px;color:var(--text-2);background:var(--panel);border-radius:10px;padding:10px 12px}
+.note p{margin:0}.note p+p{margin-top:4px}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+</head>
+<body>
+<main>
+  <h1>植木鉢を AR で見る</h1>
+  <model-viewer id="mv" alt="黒い植木鉢の3Dモデル" camera-controls touch-action="pan-y" shadow-intensity="1" shadow-softness="0.8"
+    exposure="1.15" environment-image="neutral" ar ar-modes="webxr scene-viewer quick-look" ar-scale="fixed" ar-placement="floor"
+    camera-orbit="30deg 70deg auto" interaction-prompt="auto">
+    <button slot="ar-button" hidden></button>
+  </model-viewer>
+  <div class="seg" id="groups" role="group" aria-label="ロゴ"></div>
+  <div class="seg" id="sizes" role="group" aria-label="大きさ"></div>
+  <div class="dims" id="dims"></div>
+  <button class="ar" id="arBtn" type="button">AR で見る(実物大で置く)</button>
+  <div class="note" id="note">
+    <p>「AR で見る」を押すとカメラが開く。スマホを少し動かして床や机を映すと、実物大で置かれる。指でずらす・回すことができる。</p>
+    <p>iPhone は Safari、Android は Chrome で開く。パソコンでは画面の中で回して見るだけ。</p>
+  </div>
+</main>
+<script>
+const ITEMS = [{"group": "SCGロゴ", "size": "小", "file": "models/m0.glb", "w": 62.1, "h": 95.1, "d": 42.1, "tris": 43344, "bytes": 3641872}, {"group": "SCGロゴ", "size": "中", "file": "models/m1.glb", "w": 82.1, "h": 105.1, "d": 47.1, "tris": 43440, "bytes": 3649932}, {"group": "SCGロゴ", "size": "大", "file": "models/m2.glb", "w": 102.1, "h": 115.1, "d": 52.1, "tris": 49312, "bytes": 4143180}, {"group": "サボテンロゴ", "size": "小", "file": "models/m3.glb", "w": 62.1, "h": 95.1, "d": 42.1, "tris": 90310, "bytes": 7587016}, {"group": "サボテンロゴ", "size": "中", "file": "models/m4.glb", "w": 82.1, "h": 105.1, "d": 47.1, "tris": 90822, "bytes": 7630020}, {"group": "サボテンロゴ", "size": "大", "file": "models/m5.glb", "w": 102.1, "h": 115.1, "d": 52.1, "tris": 95542, "bytes": 8026504}];
+const mv = document.getElementById("mv");
+let group = ITEMS[0].group, size = ITEMS[0].size;
+const groups = [...new Set(ITEMS.map(i => i.group))], sizes = [...new Set(ITEMS.map(i => i.size))];
+
+function seg(el, values, get, set) {
+  el.textContent = "";
+  for (const v of values) {
+    const b = document.createElement("button");
+    b.type = "button"; b.textContent = v; b.setAttribute("aria-pressed", String(get() === v));
+    b.onclick = () => { set(v); render(); };
+    el.append(b);
+  }
+}
+function render() {
+  seg(document.getElementById("groups"), groups, () => group, v => group = v);
+  seg(document.getElementById("sizes"), sizes, () => size, v => size = v);
+  const it = ITEMS.find(i => i.group === group && i.size === size);
+  if (mv.getAttribute("src") !== it.file) mv.setAttribute("src", it.file);
+  document.getElementById("dims").textContent = `${it.group} ${it.size} · 幅 ${Math.round(it.w)} × 奥行 ${Math.round(it.d)} × 高さ ${Math.round(it.h)} mm`;
+}
+document.getElementById("arBtn").onclick = () => {
+  if (mv.canActivateAR) mv.activateAR();
+  else document.getElementById("note").innerHTML = "<p>この端末・ブラウザでは AR が使えない。iPhone の Safari か、Android の Chrome で開いてほしい。画面の中では指で回して見られる。</p>";
+};
+mv.addEventListener("ar-status", (e) => {
+  if (e.detail.status === "failed") document.getElementById("note").innerHTML = "<p>AR を始められなかった。床や机を明るくして、もう一度押してみてほしい。</p>";
+});
+render();
+</script>
+</body>
+</html>
