@@ -25,6 +25,7 @@ model-viewer{width:100%;height:min(62vh,560px);background:var(--stage);border-ra
 .ar{min-height:52px;width:100%;border:0;border-radius:10px;background:var(--accent);color:var(--on-accent);font:inherit;font-size:16px;font-weight:600;cursor:pointer}
 .note{font-size:13px;color:var(--text-2);background:var(--panel);border-radius:10px;padding:10px 12px}
 .note p{margin:0}.note p+p{margin-top:4px}
+.seg[hidden]{display:none}
 button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 </style>
 </head>
@@ -36,24 +37,38 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     camera-orbit="30deg 70deg auto" max-camera-orbit="auto 92deg auto" interaction-prompt="auto">
     <button slot="ar-button" hidden></button>
   </model-viewer>
+  <div class="seg" id="pots" role="group" aria-label="鉢" hidden></div>
   <div class="seg" id="finishes" role="group" aria-label="仕上げ"></div>
   <div class="dims" id="dims"></div>
   <button class="ar" id="arBtn" type="button">AR で見る(実物大で置く)</button>
   <div class="note" id="note">
     <p>つやの強さは実物を測った値ではなく、見立ての数字。実物の写真と並べて合わせ直す前の、試しの版。</p>
     <p>ファジースキンはポイント距離 0.1mm・厚さ 0.1mm。細かい凹凸は、近づけて拡大すると見える。</p>
+    <p>「ロゴ以外」は、ロゴの所を残して、ほかにファジースキンを付けた版。サボテンロゴは線とその周り 0.8mm を残す(文字の中の穴にはファジーが付く)。SCGロゴは彫り込みと周り 0.8mm と囲まれた所を残す。SCGロゴの「文字以外」は、SCG の文字の面だけを残す。実物では境目からざらつきが少しにじむが、それは表していない。</p>
   </div>
 </main>
 <script>
-const ITEMS = [{"key": "petg", "label": "PETG 通常", "roughness": 0.3, "note": "つやが強い。積層の線に沿って光の筋が出る", "file": "models/petg.glb?v=20261013124711", "w": 82.0, "h": 105.0, "d": 47.0, "tris": 90822, "bytes": 9811380}, {"key": "petg_fuzzy", "label": "PETG 通常 + ファジースキン", "roughness": 0.55, "note": "筋は消えるが、粒に細かい光が残る", "file": "models/petg_fuzzy.glb?v=20261013124711", "w": 82.0, "h": 105.0, "d": 47.0, "tris": 90822, "bytes": 9941356}, {"key": "matte", "label": "PETG マット", "roughness": 0.7, "note": "光がぼんやり広がる。筋は弱く残る", "file": "models/matte.glb?v=20261013124711", "w": 82.0, "h": 105.0, "d": 47.0, "tris": 90822, "bytes": 9811380}, {"key": "fuzzy", "label": "PETG マット + ファジースキン", "roughness": 0.9, "note": "光の筋が消え、粉っぽく見える", "file": "models/fuzzy.glb?v=20261013124711", "w": 82.0, "h": 105.0, "d": 47.0, "tris": 90822, "bytes": 9941356}];
+const ITEMS = [{"key": "petg", "pot": "サボテンロゴ", "fin": "petg", "label": "PETG 通常", "roughness": 0.3, "note": "つやが強い。積層の線に沿って光の筋が出る", "file": "models/petg.glb?v=20261014101547", "w": 82.0, "h": 105.0, "d": 47.0, "tris": 90822, "bytes": 9811380}, {"key": "petg_fuzzy", "pot": "サボテンロゴ", "fin": "petg_fuzzy", "label": "PETG 通常 + ファジースキン", "roughness": 0.55, "note": "筋は消えるが、粒に細かい光が残る", "file": "models/petg_fuzzy.glb?v=20261014101547", "w": 82.0, "h": 105.0, "d": 47.0, "tris": 90822, "bytes": 9941356}, {"key": "matte", "pot": "サボテンロゴ", "fin": "matte", "label": "PETG マット", "roughness": 0.7, "note": "光がぼんやり広がる。筋は弱く残る", "file": "models/matte.glb?v=20261014101547", "w": 82.0, "h": 105.0, "d": 47.0, "tris": 90822, "bytes": 9811380}, {"key": "fuzzy", "pot": "サボテンロゴ", "fin": "fuzzy", "label": "PETG マット + ファジースキン", "roughness": 0.9, "note": "光の筋が消え、粉っぽく見える", "file": "models/fuzzy.glb?v=20261014101547", "w": 82.0, "h": 105.0, "d": 47.0, "tris": 90822, "bytes": 9941356}, {"key": "petg_fuzzy_logo", "pot": "サボテンロゴ", "fin": "petg_fuzzy_logo", "label": "PETG 通常 + ファジー ロゴ以外", "roughness": 0.55, "note": "ロゴの形の外だけざらつき、ロゴの所はつやのまま", "file": "models/petg_fuzzy_logo.glb?v=20261014101547", "w": 82.0, "h": 105.0, "d": 47.0, "tris": 90822, "bytes": 11288512}, {"key": "fuzzy_logo", "pot": "サボテンロゴ", "fin": "fuzzy_logo", "label": "PETG マット + ファジー ロゴ以外", "roughness": 0.9, "note": "ロゴの形の外だけ粉っぽく、ロゴの所は元のマットのまま", "file": "models/fuzzy_logo.glb?v=20261014101547", "w": 82.0, "h": 105.0, "d": 47.0, "tris": 90822, "bytes": 11289952}, {"key": "scg_petg", "pot": "SCGロゴ", "fin": "petg", "label": "PETG 通常", "roughness": 0.3, "note": "つやが強い。積層の線に沿って光の筋が出る", "file": "models/scg_petg.glb?v=20261014101547", "w": 62.0, "h": 95.0, "d": 42.0, "tris": 43746, "bytes": 4727168}, {"key": "scg_petg_fuzzy", "pot": "SCGロゴ", "fin": "petg_fuzzy", "label": "PETG 通常 + ファジースキン", "roughness": 0.55, "note": "筋は消えるが、粒に細かい光が残る", "file": "models/scg_petg_fuzzy.glb?v=20261014101547", "w": 62.0, "h": 95.0, "d": 42.0, "tris": 43746, "bytes": 4857148}, {"key": "scg_matte", "pot": "SCGロゴ", "fin": "matte", "label": "PETG マット", "roughness": 0.7, "note": "光がぼんやり広がる。筋は弱く残る", "file": "models/scg_matte.glb?v=20261014101547", "w": 62.0, "h": 95.0, "d": 42.0, "tris": 43746, "bytes": 4727168}, {"key": "scg_fuzzy", "pot": "SCGロゴ", "fin": "fuzzy", "label": "PETG マット + ファジースキン", "roughness": 0.9, "note": "光の筋が消え、粉っぽく見える", "file": "models/scg_fuzzy.glb?v=20261014101547", "w": 62.0, "h": 95.0, "d": 42.0, "tris": 43746, "bytes": 4857144}, {"key": "scg_petg_fuzzy_logo", "pot": "SCGロゴ", "fin": "petg_fuzzy_logo", "label": "PETG 通常 + ファジー ロゴ以外", "roughness": 0.55, "note": "ロゴの形の外だけざらつき、ロゴの所はつやのまま", "file": "models/scg_petg_fuzzy_logo.glb?v=20261014101547", "w": 62.0, "h": 95.0, "d": 42.0, "tris": 43746, "bytes": 5149300}, {"key": "scg_fuzzy_logo", "pot": "SCGロゴ", "fin": "fuzzy_logo", "label": "PETG マット + ファジー ロゴ以外", "roughness": 0.9, "note": "ロゴの形の外だけ粉っぽく、ロゴの所は元のマットのまま", "file": "models/scg_fuzzy_logo.glb?v=20261014101547", "w": 62.0, "h": 95.0, "d": 42.0, "tris": 43746, "bytes": 5142040}, {"key": "scg_petg_fuzzy_text", "pot": "SCGロゴ", "fin": "petg_fuzzy_text", "label": "PETG 通常 + ファジー 文字以外", "roughness": 0.55, "note": "SCG の文字の面だけつやのまま。彫られた地にもざらつき", "file": "models/scg_petg_fuzzy_text.glb?v=20261014101547", "w": 62.0, "h": 95.0, "d": 42.0, "tris": 43746, "bytes": 5368084}, {"key": "scg_fuzzy_text", "pot": "SCGロゴ", "fin": "fuzzy_text", "label": "PETG マット + ファジー 文字以外", "roughness": 0.9, "note": "SCG の文字の面だけ元のマットのまま。彫られた地にも粉っぽさ", "file": "models/scg_fuzzy_text.glb?v=20261014101547", "w": 62.0, "h": 95.0, "d": 42.0, "tris": 43746, "bytes": 5368588}];
 const mv = document.getElementById("mv");
 let key = new URLSearchParams(location.search).get("f") || ITEMS[0].key;
 if (!ITEMS.some(i => i.key === key)) key = ITEMS[0].key;
 
+const POTS = [...new Set(ITEMS.map(i => i.pot || ""))];      // 鉢が2つ以上ある時だけ、鉢の切り替えを出す
+
 function render() {
+  const cur = ITEMS.find(i => i.key === key);
+  const pe = document.getElementById("pots");
+  pe.hidden = POTS.length < 2;
+  pe.textContent = "";
+  for (const p of POTS) {
+    const b = document.createElement("button");
+    b.type = "button"; b.textContent = p; b.setAttribute("aria-pressed", String(p === (cur.pot || "")));
+    b.onclick = () => { key = (ITEMS.find(i => (i.pot || "") === p && i.fin === cur.fin) || ITEMS.find(i => (i.pot || "") === p)).key; render(); };
+    pe.append(b);
+  }
   const el = document.getElementById("finishes");
   el.textContent = "";
-  for (const it of ITEMS) {
+  for (const it of ITEMS.filter(i => (i.pot || "") === (cur.pot || ""))) {
     const b = document.createElement("button");
     b.type = "button"; b.textContent = it.label; b.setAttribute("aria-pressed", String(it.key === key));
     b.onclick = () => { key = it.key; render(); };
